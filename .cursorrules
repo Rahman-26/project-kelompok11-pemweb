@@ -1,0 +1,242 @@
+Collaborative To-Do List Application
+
+## Project Overview
+Name: Collaborative To-Do List Web Application
+Description: A web-based task management system that allows users to create workspaces, collaborate on tasks, and track project progress in real-time using MongoDB.
+Goal: To solve productivity management issues in groups or teams by providing structured task assignments and flexible NoSQL data storage.
+Target Users: University students, developers, and small project teams.
+Version: v1.0.0
+Status: Active Development
+
+## Tech Stack
+Language: JavaScript (Node.js)
+Framework: Express.js
+Styling: Tailwind CSS
+UI Library: None (Custom HTML/CSS with Tailwind)
+Database: MongoDB
+ORM: Mongoose
+Auth: JWT (JSON Web Tokens) & bcrypt
+State Management: None (Server-rendered / Vanilla JS)
+Data Fetching: Axios / Fetch API
+Package Manager: npm
+Deployment: Localhost (Development)
+
+## Commands
+# Development
+npm run dev          # Run development server with nodemon
+npm start            # Run production build server
+# Package Management
+npm install [package] # Install new dependency package
+# Testing
+npm run test         # Run all tests
+# Database
+npm run db:seed      # Seed initial template data to MongoDB
+
+## Project Structure
+Architecture: By Feature (Screaming Architecture)
+
+[root]/
+├── config/
+│   └── db.js                 # Shared Mongoose database connection initialization
+├── src/
+│   ├── features/             # Core business features
+│   │   ├── auth/             # Authentication feature module
+│   │   │   ├── authController.js
+│   │   │   ├── authRoutes.js
+│   │   │   ├── authModel.js       # Mongoose Schema for Users
+│   │   │   └── authValidator.js   # Server-side data validation for user signup/login
+│   │   │
+│   │   ├── workspaces/       # Workspace (Collaboration space) feature module
+│   │   │   ├── workspaceController.js
+│   │   │   ├── workspaceRoutes.js
+│   │   │   └── workspaceModel.js  # Mongoose Schema for Workspaces
+│   │   │
+│   │   └── tasks/            # Tasks management feature module (CRUD + Search & Filter)
+│   │       ├── taskController.js
+│   │       ├── taskRoutes.js
+│   │       ├── taskModel.js       # Mongoose Schema for Tasks
+│   │       └── taskValidator.js
+│   │
+│   ├── middlewares/          # Shared global cross-cutting concerns middlewares
+│   │   ├── authMiddleware.js      # Formulates session verification and role checks (admin vs user)
+│   │   └── errorMiddleware.js     # Centralized uniform error management
+│   │
+│   └── app.js                # Initiates Express instance and registers global modules
+├── public/                   # Static assets accessible by public
+├── .env                      # Local secret variables configuration (Git ignored)
+├── .gitignore                # Tells Git what to ignore (node_modules, .env)
+├── package.json              # Project dependencies manifest file
+└── server.js                 # Application network boundary setup entrypoint
+
+# File Placement Rules:
+- UI Components are placed in public/ or served via views if using template engines.
+- Business logic always resides inside `src/features/[feature-name]/`.
+- Database query logic must be kept inside controllers or models within their respective feature folder.
+- Do not create new folders without prior confirmation.
+
+## Naming Conventions
+# File and Folder
+Components: PascalCase (if any, e.g., TaskCard.js)
+Non-components: camelCase (e.g., authController.js, taskRoutes.js)
+Folder: kebab-case (e.g., workspaces/, user-profile/)
+Pages: index.html or dashboard.html
+Layout: layout.html
+Test file: [name].test.js
+Variables: camelCase (e.g., userData, isLoading)
+Constants: UPPER_SNAKE (e.g., JWT_SECRET, PORT)
+Functions: camelCase (e.g., getUserById, formatTaskDate)
+Types/Interfaces: PascalCase (if using TypeScript, otherwise Mongoose models use PascalCase: User, Task)
+Enum: PascalCase (e.g., UserRole, TaskStatus)
+CSS Class: kebab-case (e.g., btn-primary, nav-item)
+# Git Branch
+Fitur baru: feat/[nama-fitur]
+Bug fix: fix/[nama-bug]
+Hotfix: hotfix/[nama]
+Refactor: refactor/[nama]
+
+## Code Conventions
+- Enforce clean code practices, DRY (Don't Repeat Yourself), and Separation of Concerns.
+- Avoid code duplication; extract logic into helper functions if used more than once.
+- Write readable, descriptive code rather than overly short/clever code.
+# Error Handling
+- Always use try-catch blocks for async functions and database operations.
+- Never leave errors unhandled; log them and pass to next() for centralized handling.
+- Write informative and specific error messages.
+# Import Sequence
+1. External libraries (express, mongoose, etc.)
+2. Internal absolute / feature models
+3. Internal relative modules (./utils, ../middlewares)
+4. Assets and styles
+# Export Pattern
+- Use named exports for utilities and helper functions.
+- Use default export for main modules/routers if required by architecture.
+
+## Component Rules
+# Writing Order in One Component
+1. Imports
+2. Configuration / Constants
+3. Main Function / Controller definition
+4. Helper functions / local handlers
+5. Module Export
+# Props Rules
+- Explicitly validate object properties passed into functions.
+- Use default values for optional parameters.
+
+## Styling Rules
+# Styling Approach
+- Use Tailwind CSS utility classes directly in HTML/views.
+- Do not use inline styles unless for truly dynamic calculated values.
+- Do not use !important.
+# Responsive Design
+- Mobile-first approach.
+- Breakpoints: sm (640px) / md (768px) / lg (1024px) / xl (1280px).
+# Dark Mode
+- Use Tailwind's dark: prefix.
+- Always test layout in dark mode after creating new views.
+# Design Tokens
+- Use standard Tailwind config variables for spacing, colors, and typography.
+- Do not hardcode custom hex color values directly in HTML.
+
+## API & Data Fetching Rules
+# When to Use Server vs Client Fetch
+Server fetch: Fetching core data during template rendering (initial page load).
+Client fetch: Dynamic updates after user interactions (filtering, searching, status toggles).
+# API Response Format
+- Always return a consistent format across all API endpoints:
+  `{ "success": boolean, "data": T | null, "message": string }`
+# Error Handling in API
+- Always handle errors with try-catch blocks.
+- Return appropriate HTTP status codes (200, 201, 400, 401, 403, 404, 500).
+- Do not expose raw internal database error details to the client in production.
+# Fetch Function Location
+- Keep all client-side fetch requests or API routing handlers isolated within feature controllers.
+# Environment
+- Use environment variables for all sensitive database URIs, API keys, and secret tokens.
+- Never hardcode credentials directly in code.
+
+## State Management Rules
+# State Hierarchy
+1. Local state variables for isolated page components.
+2. Shared context via global window objects or sessionStorage if multi-page state persistence is needed.
+# When to Use Global State
+- Storing active user session data or auth tokens needed across multiple features.
+- Dynamic global UI components (e.g., global notification banner, sidebar toggle).
+- Feature store domain separation: create state boundaries per feature module.
+
+## Performance Rules
+# Code Splitting
+- Lazy load asset-heavy modules or large third-party libraries only when required.
+# Image Optimization
+- Always define width and height attributes for layout elements.
+- Use WebP or modern image formats for newly added assets.
+- Avoid serving uncompressed raw images.
+# Re-render Optimization
+- Optimize front-end DOM manipulation by avoiding unnecessary complete page redraws; update specific nodes dynamically.
+# Bundle Size
+- Import only required sub-modules from large npm packages (e.g., import specific methods from lodash instead of the whole library).
+
+## Git Rules
+# MANDATORY: Commit After Every Change
+- Every time a functional change or feature addition is completed, immediately commit to GitHub before moving to the next task.
+- This allows clean rollbacks and easy comparison if results do not meet expectations.
+# Format Commit Message
+- feat: [description of new feature]
+- fix: [description of fixed bug]
+- refactor: [description of code refactor]
+- style: [changes to code styling or formatting]
+- docs: [changes to documentation]
+- chore: [changes to configuration or tools]
+# Example of a Correct Commit Message
+- feat: add user authentication with JWT and bcrypt
+- fix: resolve task filtering not resetting on mobile view
+- refactor: extract database connection into unified pool config
+# addition Rules
+- Never commit .env files or files containing secrets.
+- One commit per specific change. Do not bundle unrelated changes together.
+
+## Features
+# It's done and running
+- Step 1: Base project scaffolding and MongoDB/Mongoose database configuration (Express, Mongoose, express-mongo-sanitize, `server.js`, `src/app.js`, `config/db.js`).
+# In progress (do not change without confirmation)
+- [ ] Step 2: Implementation of authentication gateway (Register, Login, Role Definition, Route Guarding).
+# Hasn't started yet
+- [ ] Step 3: Full CRUD task tracking engine with explicit server-side checks.
+- [ ] Step 4: Logic integration for advanced query searching and filtering.
+- [ ] Step 5: Responsive mobile-first interface structure wiring with Tailwind CSS.
+
+## Testing
+# Testing Approach
+Jenis testing: Manual Testing & Integration Testing
+Framework: Jest (if implemented later)
+# What Needs to be Tested
+- Helper and validator functions.
+- Complex business logical paths (e.g., collaborator access authorization).
+- API Endpoints (Happy path and error use cases).
+# What Not to Test
+- Simple presentational UI files.
+- Third-party packages (e.g., Mongoose core behavior).
+- Configuration files.
+# Test Writing Rules
+- One test file per source file ([name].test.js).
+- Use descriptive naming convention: 'should [expected behavior] when [condition]'.
+- Follow AAA pattern: Arrange, Act, Assert.
+
+## Do Not
+- If instructions or prompts are ambiguous, ASK FIRST before writing code. Do not assume.
+- DO NOT create new folders without explicit confirmation.
+- DO NOT delete or move files without permission.
+- DO NOT alter the established project structural pattern.
+- DO NOT accept un-sanitized user inputs directly into MongoDB queries (prevent NoSQL Injection).
+- DO NOT hardcode values meant to come from environment variables.
+- DO NOT commit `.env` or configuration secrets.
+- DO NOT install new npm packages without confirmation.
+- DO NOT bypass validation constraints on API routes.
+
+## Environment Variables
+# Setup
+- Copy `.env.example` to `.env` for local development.
+- Never commit `.env` files to the repository.
+# Server-only Variables (Never expose to the client)
+PORT=5000                     # Listening port for application server execution
+DATABASE_URL=mongodb://...     # Full connection URI string for MongoDB instance
+JWT_SECRET=your_secret_key    # Secure string token signature cipher phrase
