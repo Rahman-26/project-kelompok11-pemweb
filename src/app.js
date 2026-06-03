@@ -2,6 +2,7 @@ const express = require('express');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const authRoutes = require('./features/auth/authRoutes');
+const workspaceRoutes = require('./features/workspaces/workspaceRoutes');
 
 const app = express();
 
@@ -30,5 +31,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/workspaces', workspaceRoutes);
 
 module.exports = app;
