@@ -2,7 +2,9 @@ const express = require('express');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const authRoutes = require('./features/auth/authRoutes');
+const taskRoutes = require('./features/tasks/taskRoutes');
 const workspaceRoutes = require('./features/workspaces/workspaceRoutes');
+const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 
 const app = express();
 
@@ -32,5 +34,9 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
+app.use('/api/tasks', taskRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;

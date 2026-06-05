@@ -197,11 +197,11 @@ Client fetch: Dynamic updates after user interactions (filtering, searching, sta
 ## Features
 # It's done and running
 - Step 1: Base project scaffolding and MongoDB/Mongoose database configuration (Express, Mongoose, express-mongo-sanitize, `server.js`, `src/app.js`, `config/db.js`).
+- Step 2: Authentication gateway (Register, Login, Role Definition, Route Guarding) in `src/features/auth/`.
+- Step 3: Full CRUD task tracking engine with explicit server-side checks in `src/features/tasks/`.
 # In progress (do not change without confirmation)
-- [ ] Step 2: Implementation of authentication gateway (Register, Login, Role Definition, Route Guarding).
-# Hasn't started yet
-- [ ] Step 3: Full CRUD task tracking engine with explicit server-side checks.
 - [ ] Step 4: Logic integration for advanced query searching and filtering.
+# Hasn't started yet
 - [ ] Step 5: Responsive mobile-first interface structure wiring with Tailwind CSS.
 
 ## Testing
