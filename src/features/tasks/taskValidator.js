@@ -3,6 +3,15 @@ const mongoose = require('mongoose');
 const { TASK_STATUSES, TASK_PRIORITIES } = require('./taskModel');
 
 const OBJECT_ID_PATTERN = /^[a-fA-F0-9]{24}$/;
+const MAX_SEARCH_LENGTH = 100;
+
+const ALLOWED_LIST_QUERY_KEYS = Object.freeze([
+  'workspaceId',
+  'search',
+  'status',
+  'priority',
+  'assignee',
+]);
 
 function validationError(message) {
   return { valid: false, message, data: null };
@@ -22,6 +31,14 @@ function isValidObjectIdString(value) {
     OBJECT_ID_PATTERN.test(value) &&
     mongoose.Types.ObjectId.isValid(value)
   );
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasOnlyAllowedQueryKeys(query, allowedKeys) {
+  return Object.keys(query).every((key) => allowedKeys.includes(key));
 }
 
 function parseAssignedTo(value) {
@@ -148,8 +165,8 @@ function validateListTasksQuery(query) {
     return validationError('Query parameters must be an object');
   }
 
-  if (Object.keys(query).length !== 1 || query.workspaceId === undefined) {
-    return validationError('Only workspaceId is allowed as a list query parameter');
+  if (!hasOnlyAllowedQueryKeys(query, ALLOWED_LIST_QUERY_KEYS)) {
+    return validationError('Unsupported query parameter supplied');
   }
 
   const workspaceId = typeof query.workspaceId === 'string' ? query.workspaceId.trim() : '';
@@ -157,7 +174,66 @@ function validateListTasksQuery(query) {
     return validationError('A valid workspaceId query parameter is required');
   }
 
-  return validationSuccess({ workspaceId });
+  const filters = {
+    workspaceId: new mongoose.Types.ObjectId(workspaceId),
+  };
+
+  if (query.search !== undefined) {
+    if (typeof query.search !== 'string') {
+      return validationError('Search must be a string');
+    }
+
+    const search = query.search.trim();
+    if (search.length === 0) {
+      return validationError('Search cannot be empty when provided');
+    }
+    if (search.length > MAX_SEARCH_LENGTH) {
+      return validationError(`Search cannot exceed ${MAX_SEARCH_LENGTH} characters`);
+    }
+
+    filters.searchRegex = new RegExp(escapeRegex(search), 'i');
+  }
+
+  if (query.status !== undefined) {
+    if (typeof query.status !== 'string') {
+      return validationError('Status must be a string');
+    }
+
+    const status = query.status.trim();
+    if (!TASK_STATUSES.includes(status)) {
+      return validationError('Status must be todo, in_progress, or done');
+    }
+
+    filters.status = status;
+  }
+
+  if (query.priority !== undefined) {
+    if (typeof query.priority !== 'string') {
+      return validationError('Priority must be a string');
+    }
+
+    const priority = query.priority.trim();
+    if (!TASK_PRIORITIES.includes(priority)) {
+      return validationError('Priority must be low, medium, or high');
+    }
+
+    filters.priority = priority;
+  }
+
+  if (query.assignee !== undefined) {
+    if (typeof query.assignee !== 'string') {
+      return validationError('Assignee must be a string');
+    }
+
+    const assigneeId = query.assignee.trim();
+    if (!isValidObjectIdString(assigneeId)) {
+      return validationError('Assignee must be a valid user id');
+    }
+
+    filters.assignee = new mongoose.Types.ObjectId(assigneeId);
+  }
+
+  return validationSuccess(filters);
 }
 
 function validateTaskIdParam(taskId) {

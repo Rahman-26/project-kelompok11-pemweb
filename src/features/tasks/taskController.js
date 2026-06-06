@@ -97,6 +97,33 @@ async function ensureValidAssignee(assignedToId, workspace) {
   return { ok: true };
 }
 
+function buildTaskFilterQuery(validatedFilters) {
+  const mongoQuery = {
+    workspaceId: validatedFilters.workspaceId,
+  };
+
+  if (validatedFilters.status) {
+    mongoQuery.status = validatedFilters.status;
+  }
+
+  if (validatedFilters.priority) {
+    mongoQuery.priority = validatedFilters.priority;
+  }
+
+  if (validatedFilters.assignee) {
+    mongoQuery.assignedTo = validatedFilters.assignee;
+  }
+
+  if (validatedFilters.searchRegex) {
+    mongoQuery.$or = [
+      { title: { $regex: validatedFilters.searchRegex } },
+      { description: { $regex: validatedFilters.searchRegex } },
+    ];
+  }
+
+  return mongoQuery;
+}
+
 async function createTask(req, res, next) {
   try {
     const validation = validateCreateTask(req.body);
@@ -165,7 +192,10 @@ async function getTasks(req, res, next) {
       });
     }
 
-    const access = await ensureWorkspaceMember(validation.data.workspaceId, req.user._id);
+    const access = await ensureWorkspaceMember(
+      validation.data.workspaceId.toString(),
+      req.user._id,
+    );
     if (!access.ok) {
       return res.status(access.status).json({
         success: false,
@@ -174,7 +204,9 @@ async function getTasks(req, res, next) {
       });
     }
 
-    const tasks = await Task.find({ workspaceId: validation.data.workspaceId })
+    const mongoQuery = buildTaskFilterQuery(validation.data);
+
+    const tasks = await Task.find(mongoQuery)
       .populate(POPULATE_ASSIGNED_TO)
       .populate(POPULATE_CREATOR)
       .populate(POPULATE_WORKSPACE)
@@ -182,7 +214,18 @@ async function getTasks(req, res, next) {
 
     return res.status(200).json({
       success: true,
-      data: { tasks: tasks.map(formatTask) },
+      data: {
+        tasks: tasks.map(formatTask),
+        filters: {
+          workspaceId: validation.data.workspaceId.toString(),
+          search: typeof req.query.search === 'string' ? req.query.search.trim() : undefined,
+          status: validation.data.status,
+          priority: validation.data.priority,
+          assignee: validation.data.assignee
+            ? validation.data.assignee.toString()
+            : undefined,
+        },
+      },
       message: 'Tasks retrieved successfully',
     });
   } catch (err) {
