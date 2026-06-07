@@ -200,8 +200,9 @@ Client fetch: Dynamic updates after user interactions (filtering, searching, sta
 - Step 2: Authentication gateway (Register, Login, Role Definition, Route Guarding) in `src/features/auth/`.
 - Step 3: Full CRUD task tracking engine with explicit server-side checks in `src/features/tasks/`.
 - Step 4: Advanced task search (regex on title/description) and filtering (status, priority, assignee) with validated query parameters in `src/features/tasks/`.
+- Step 5: Responsive mobile-first interface (`public/index.html`, `public/dashboard.html`) with Tailwind CSS, hamburger sidebar, and Fetch API integration.
 # In progress (do not change without confirmation)
-- [ ] Step 5: Responsive mobile-first interface structure wiring with Tailwind CSS.
+- None
 # Hasn't started yet
 
 ## Testing

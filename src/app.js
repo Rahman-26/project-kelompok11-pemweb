@@ -1,3 +1,5 @@
+const path = require('path');
+
 const express = require('express');
 const mongoSanitize = require('express-mongo-sanitize');
 
@@ -35,6 +37,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/tasks', taskRoutes);
+
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(notFound);
 app.use(errorHandler);
