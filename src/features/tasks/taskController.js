@@ -12,16 +12,20 @@ const POPULATE_ASSIGNED_TO = { path: 'assignedTo', select: 'name email role' };
 const POPULATE_CREATOR = { path: 'createdBy', select: 'name email role' };
 const POPULATE_WORKSPACE = { path: 'workspaceId', select: 'name description' };
 
+// 🟢 PERBAIKAN LOGIKA: Kebal terhadap data string biasa maupun objek hasil populate
 function isWorkspaceMember(workspace, userId) {
+  const ownerId = workspace.owner._id ? workspace.owner._id.toString() : workspace.owner.toString();
   const userIdString = userId.toString();
 
-  if (workspace.owner.toString() === userIdString) {
+  if (ownerId === userIdString) {
     return true;
   }
 
-  return workspace.members.some(
-    (member) => member.user && member.user.toString() === userIdString,
-  );
+  return workspace.members.some((member) => {
+    if (!member) return false;
+    const memberUserId = member.user && member.user._id ? member.user._id : member.user;
+    return memberUserId && memberUserId.toString() === userIdString;
+  });
 }
 
 function formatTask(task) {
@@ -144,8 +148,11 @@ async function createTask(req, res, next) {
       });
     }
 
+    // 🛡️ Pengaman data agar terhindar dari error undefined
+    const assignedToId = validation.data.assignedToId || null;
+
     const assigneeCheck = await ensureValidAssignee(
-      validation.data.assignedToId,
+      assignedToId,
       access.workspace,
     );
     if (!assigneeCheck.ok) {
@@ -162,7 +169,7 @@ async function createTask(req, res, next) {
       status: validation.data.status,
       priority: validation.data.priority,
       workspaceId: validation.data.workspaceId,
-      assignedTo: validation.data.assignedToId,
+      assignedTo: assignedToId,
       createdBy: req.user._id,
     });
 
