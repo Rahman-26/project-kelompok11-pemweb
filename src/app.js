@@ -15,7 +15,7 @@ app.use(express.json({ limit: '64kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 
 // Mitigate NoSQL injection: remove keys that start with "$" or contain "." from req bodies, query, params, headers.
-app.use(
+/*app.use(
   mongoSanitize({
     replaceWith: '_',
     onSanitize: ({ req, key }) => {
@@ -25,6 +25,7 @@ app.use(
     },
   }),
 );
+*/
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -34,11 +35,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use(express.static(path.resolve(__dirname, '../public')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/tasks', taskRoutes);
-
-app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(notFound);
 app.use(errorHandler);
