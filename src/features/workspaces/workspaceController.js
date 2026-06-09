@@ -63,14 +63,18 @@ function getMemberEntry(workspace, userId) {
 }
 
 function isWorkspaceMember(workspace, userId) {
-  if (workspace.owner.toString() === userId.toString()) {
+  const ownerId = workspace.owner._id ? workspace.owner._id.toString() : workspace.owner.toString();
+  const userIdString = userId.toString();
+
+  if (ownerId === userIdString) {
     return true;
   }
   return Boolean(getMemberEntry(workspace, userId));
 }
 
 function isWorkspaceOwner(workspace, userId) {
-  return workspace.owner.toString() === userId.toString();
+  const ownerId = workspace.owner._id ? workspace.owner._id.toString() : workspace.owner.toString();
+  return ownerId === userId.toString();
 }
 
 function validateCreateWorkspace(body) {
